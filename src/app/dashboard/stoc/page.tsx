@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -14,10 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatusStamp, type StockStatus } from "@/components/status-stamp";
+import { cn } from "@/lib/utils";
 
 const BUSINESS_NAME = "Cafeneaua Test";
-
-type StockStatus = "rosu" | "galben" | "verde";
 
 function getStockStatus(currentStock: number, minThreshold: number): StockStatus {
   if (currentStock <= minThreshold) return "rosu";
@@ -78,56 +77,81 @@ export default async function StocPage() {
         >
           ← Dashboard
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold">Stoc</h1>
+        <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
+          Stoc
+        </h1>
         <p className="text-sm text-muted-foreground">{BUSINESS_NAME}</p>
       </div>
 
       {belowThresholdCount > 0 && (
-        <Card className="border-destructive/50 bg-destructive/10">
+        <Card className="border-danger/30 bg-danger/10 shadow-sm">
           <CardContent className="pt-6">
-            <p className="font-medium text-destructive">
+            <p className="font-medium text-danger">
               {belowThresholdCount} ingrediente sub prag minim
             </p>
           </CardContent>
         </Card>
       )}
 
-      <div className="rounded-md border">
+      {/* Sub 640px: carduri stivuite */}
+      <div className="space-y-3 sm:hidden">
+        {rows.map((row) => (
+          <Card key={row.id} className="shadow-sm">
+            <CardContent className="flex items-start justify-between gap-3 p-4">
+              <div className="min-w-0 space-y-1">
+                <p className="font-medium text-ink">{row.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatCategory(row.category)}
+                </p>
+                <div className="pt-1 text-sm">
+                  <p className="font-mono tabular-nums">
+                    Stoc: {formatQuantity(row.currentStock, row.usageUnit)}
+                  </p>
+                  <p className="font-mono tabular-nums text-muted-foreground">
+                    Prag min: {formatQuantity(row.minThreshold, row.usageUnit)}
+                  </p>
+                </div>
+              </div>
+              <StatusStamp status={row.status} />
+            </CardContent>
+          </Card>
+        ))}
+        {rows.length === 0 && (
+          <p className="p-4 text-center text-sm text-muted-foreground">
+            Niciun ingredient găsit.
+          </p>
+        )}
+      </div>
+
+      {/* 640px+: tabel */}
+      <div className="hidden rounded-xl border bg-card shadow-sm sm:block">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nume</TableHead>
               <TableHead>Categorie</TableHead>
-              <TableHead>Stoc curent</TableHead>
-              <TableHead>Prag minim</TableHead>
+              <TableHead className="text-right">Stoc curent</TableHead>
+              <TableHead className="text-right">Prag minim</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell className="font-medium">{row.name}</TableCell>
+                <TableCell className="font-medium text-ink">
+                  {row.name}
+                </TableCell>
                 <TableCell>{formatCategory(row.category)}</TableCell>
-                <TableCell>
+                <TableCell
+                  className={cn("text-right font-mono tabular-nums")}
+                >
                   {formatQuantity(row.currentStock, row.usageUnit)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
                   {formatQuantity(row.minThreshold, row.usageUnit)}
                 </TableCell>
                 <TableCell>
-                  {row.status === "rosu" && (
-                    <Badge variant="destructive">Sub prag</Badge>
-                  )}
-                  {row.status === "galben" && (
-                    <Badge className="border-transparent bg-yellow-500 text-white hover:bg-yellow-500/80">
-                      Aproape de prag
-                    </Badge>
-                  )}
-                  {row.status === "verde" && (
-                    <Badge className="border-transparent bg-green-600 text-white hover:bg-green-600/80">
-                      OK
-                    </Badge>
-                  )}
+                  <StatusStamp status={row.status} />
                 </TableCell>
               </TableRow>
             ))}
