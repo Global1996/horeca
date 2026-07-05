@@ -23,3 +23,77 @@ model User {
 
   @@map("users")
 }
+
+model Business {
+  id           String       @id @default(cuid())
+  name         String
+  type         String
+  cui          String?
+  createdAt    DateTime     @default(now())
+  ingredients  Ingredient[]
+  suppliers    Supplier[]
+  employees    Employee[]
+}
+
+model Ingredient {
+  id             String     @id @default(cuid())
+  businessId     String
+  business       Business   @relation(fields: [businessId], references: [id])
+  name           String
+  category       String
+  purchaseUnit   String
+  usageUnit      String
+  conversionRate Float
+  currentStock   Float
+  minThreshold   Float
+  vatRate        Int
+  supplierId     String?
+  supplier       Supplier?  @relation(fields: [supplierId], references: [id])
+  stockMovements StockMovement[]
+  @@index([businessId])
+}
+
+model StockMovement {
+  id             String     @id @default(cuid())
+  ingredientId   String
+  ingredient     Ingredient @relation(fields: [ingredientId], references: [id])
+  type           String
+  quantity       Float
+  unitPrice      Float?
+  expirationDate DateTime?
+  note           String?
+  createdBy      String?
+  createdAt      DateTime   @default(now())
+  @@index([ingredientId])
+  @@index([createdAt])
+}
+
+model Supplier {
+  id          String       @id @default(cuid())
+  businessId  String
+  business    Business     @relation(fields: [businessId], references: [id])
+  name        String
+  contact     String?
+  phone       String?
+  ingredients Ingredient[]
+  @@index([businessId])
+}
+
+model Employee {
+  id          String   @id @default(cuid())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id])
+  name        String
+  role        String
+  shifts      Shift[]
+  @@index([businessId])
+}
+
+model Shift {
+  id         String    @id @default(cuid())
+  employeeId String
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  startTime  DateTime
+  endTime    DateTime?
+  @@index([employeeId])
+}
