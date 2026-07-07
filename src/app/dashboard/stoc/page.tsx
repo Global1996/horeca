@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -14,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusStamp, type StockStatus } from "@/components/status-stamp";
+import { formatCategory, formatQuantity } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const BUSINESS_NAME = "Cafeneaua Test";
@@ -30,18 +32,11 @@ const statusOrder: Record<StockStatus, number> = {
   verde: 2,
 };
 
-const numberFormat = new Intl.NumberFormat("ro-RO");
-
-function formatQuantity(value: number, unit: string) {
-  return `${numberFormat.format(value)} ${unit}`;
-}
-
-function formatCategory(category: string) {
-  const withSpaces = category.replace(/_/g, " ");
-  return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
-}
-
-export default async function StocPage() {
+export default async function StocPage({
+  searchParams,
+}: {
+  searchParams: { success?: string };
+}) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -70,18 +65,33 @@ export default async function StocPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <div>
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted-foreground hover:underline"
-        >
-          ← Dashboard
-        </Link>
-        <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
-          Stoc
-        </h1>
-        <p className="text-sm text-muted-foreground">{BUSINESS_NAME}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <Link
+            href="/dashboard"
+            className="text-sm text-muted-foreground hover:underline"
+          >
+            ← Dashboard
+          </Link>
+          <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
+            Stoc
+          </h1>
+          <p className="text-sm text-muted-foreground">{BUSINESS_NAME}</p>
+        </div>
+        <Button asChild size="sm" className="mt-1 shrink-0">
+          <Link href="/dashboard/stoc/numarare">Numără stoc</Link>
+        </Button>
       </div>
+
+      {searchParams.success === "numarare" && (
+        <Card className="border-olive/30 bg-olive/10 shadow-sm">
+          <CardContent className="pt-6">
+            <p className="font-medium text-olive">
+              Numărătoare salvată cu succes
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {belowThresholdCount > 0 && (
         <Card className="border-danger/30 bg-danger/10 shadow-sm">
