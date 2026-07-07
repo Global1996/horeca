@@ -67,8 +67,11 @@ model StockMovement {
   note           String?
   createdBy      String?
   createdAt      DateTime   @default(now())
+  supplierId     String?
+  supplier       Supplier?  @relation(fields: [supplierId], references: [id])
   @@index([ingredientId])
   @@index([createdAt])
+  @@index([supplierId])
   @@map("stock_movements")
 }
 
@@ -80,6 +83,7 @@ model Supplier {
   contact     String?
   phone       String?
   ingredients Ingredient[]
+  stockMovements StockMovement[]
   @@index([businessId])
   @@map("suppliers")
 }

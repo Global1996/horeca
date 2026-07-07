@@ -32,10 +32,16 @@ const statusOrder: Record<StockStatus, number> = {
   verde: 2,
 };
 
+const successMessages: Record<string, string> = {
+  numarare: "Numărătoare salvată cu succes",
+  achizitie: "Achiziție înregistrată cu succes",
+  waste: "Pierdere înregistrată cu succes",
+};
+
 export default async function StocPage({
   searchParams,
 }: {
-  searchParams: { success?: string };
+  searchParams: { success?: string; clamped?: string };
 }) {
   const session = await getServerSession(authOptions);
 
@@ -62,32 +68,51 @@ export default async function StocPage({
     .sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
 
   const belowThresholdCount = rows.filter((row) => row.status === "rosu").length;
+  const successMessage = searchParams.success
+    ? successMessages[searchParams.success]
+    : undefined;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <Link
-            href="/dashboard"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            ← Dashboard
-          </Link>
-          <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
-            Stoc
-          </h1>
-          <p className="text-sm text-muted-foreground">{BUSINESS_NAME}</p>
-        </div>
-        <Button asChild size="sm" className="mt-1 shrink-0">
+      <div>
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          ← Dashboard
+        </Link>
+        <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
+          Stoc
+        </h1>
+        <p className="text-sm text-muted-foreground">{BUSINESS_NAME}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm">
           <Link href="/dashboard/stoc/numarare">Numără stoc</Link>
+        </Button>
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/dashboard/stoc/achizitie">Adaugă achiziție</Link>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <Link href="/dashboard/stoc/waste">Înregistrează pierdere</Link>
         </Button>
       </div>
 
-      {searchParams.success === "numarare" && (
+      {successMessage && (
         <Card className="border-olive/30 bg-olive/10 shadow-sm">
           <CardContent className="pt-6">
-            <p className="font-medium text-olive">
-              Numărătoare salvată cu succes
+            <p className="font-medium text-olive">{successMessage}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {searchParams.clamped && (
+        <Card className="border-gold/40 bg-gold/15 shadow-sm">
+          <CardContent className="pt-6">
+            <p className="font-medium text-ink">
+              Stocul pentru „{searchParams.clamped}” a fost plafonat la 0
+              (cantitatea de pierdere depășea stocul curent).
             </p>
           </CardContent>
         </Card>
