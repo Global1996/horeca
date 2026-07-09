@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
           : {}),
       },
       include: {
-        ingredient: { select: { name: true, usageUnit: true } },
+        ingredient: { select: { name: true, usageUnit: true, vatRate: true } },
         supplier: { select: { name: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -109,28 +109,46 @@ export async function GET(request: NextRequest) {
     { header: "Ingredient", key: "ingredient" },
     { header: "Cantitate", key: "quantity" },
     { header: "U.M.", key: "unit" },
+    { header: "Cota TVA", key: "vatRate" },
     { header: "Preț unitar", key: "unitPrice" },
+    { header: "Valoare totală", key: "totalValue" },
     { header: "Furnizor", key: "supplier" },
     { header: "Notă", key: "note" },
     { header: "Creat de", key: "createdBy" },
   ];
 
   movements.forEach((movement) => {
+    const totalValue =
+      movement.unitPrice != null ? movement.quantity * movement.unitPrice : null;
+
     movementsSheet.addRow({
       date: movement.createdAt,
       type: MOVEMENT_TYPE_LABELS[movement.type] ?? movement.type,
       ingredient: movement.ingredient.name,
       quantity: movement.quantity,
       unit: movement.ingredient.usageUnit,
+      vatRate: `${movement.ingredient.vatRate}%`,
       unitPrice: movement.unitPrice,
+      totalValue,
       supplier: movement.supplier?.name ?? "",
       note: movement.note ?? "",
       createdBy: movement.createdBy ?? "",
     });
   });
 
+  const achizitieTotal = movements
+    .filter((movement) => movement.type === "achizitie" && movement.unitPrice != null)
+    .reduce((sum, movement) => sum + movement.quantity * movement.unitPrice!, 0);
+
+  const totalRow = movementsSheet.addRow({
+    date: "Total achiziții perioada",
+    totalValue: achizitieTotal,
+  });
+  totalRow.font = { bold: true };
+
   movementsSheet.getColumn("date").numFmt = "dd.mm.yyyy hh:mm";
   movementsSheet.getColumn("unitPrice").numFmt = "0.00";
+  movementsSheet.getColumn("totalValue").numFmt = "0.00";
 
   styleHeaderRow(movementsSheet, HEADER_BG_HEX, HEADER_TEXT_HEX);
   autoSizeColumns(movementsSheet);
