@@ -66,7 +66,9 @@ export async function GET(request: NextRequest) {
           : {}),
       },
       include: {
-        ingredient: { select: { name: true, usageUnit: true, vatRate: true } },
+        ingredient: {
+          select: { name: true, usageUnit: true, vatRate: true, conversionRate: true },
+        },
         supplier: { select: { name: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -119,7 +121,9 @@ export async function GET(request: NextRequest) {
 
   movements.forEach((movement) => {
     const totalValue =
-      movement.unitPrice != null ? movement.quantity * movement.unitPrice : null;
+      movement.unitPrice != null
+        ? (movement.quantity / movement.ingredient.conversionRate) * movement.unitPrice
+        : null;
 
     movementsSheet.addRow({
       date: movement.createdAt,
@@ -138,7 +142,12 @@ export async function GET(request: NextRequest) {
 
   const achizitieTotal = movements
     .filter((movement) => movement.type === "achizitie" && movement.unitPrice != null)
-    .reduce((sum, movement) => sum + movement.quantity * movement.unitPrice!, 0);
+    .reduce(
+      (sum, movement) =>
+        sum +
+        (movement.quantity / movement.ingredient.conversionRate) * movement.unitPrice!,
+      0
+    );
 
   const totalRow = movementsSheet.addRow({
     date: "Total achiziții perioada",
