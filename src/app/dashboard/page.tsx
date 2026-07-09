@@ -1,8 +1,10 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { authOptions } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -31,6 +33,18 @@ export default async function DashboardPage() {
           </p>
         </div>
         <SignOutButton />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/dashboard/stoc">Stoc</Link>
+        </Button>
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/dashboard/furnizori">Furnizori</Link>
+        </Button>
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/dashboard/angajati">Angajați</Link>
+        </Button>
       </div>
 
       <Card>
