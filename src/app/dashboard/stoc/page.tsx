@@ -16,15 +16,10 @@ import {
 } from "@/components/ui/table";
 import { StatusStamp, type StockStatus } from "@/components/status-stamp";
 import { formatCategory, formatQuantity } from "@/lib/format";
+import { getStockStatus } from "@/lib/stock-status";
 import { cn } from "@/lib/utils";
 
 const BUSINESS_NAME = "Cafeneaua Test";
-
-function getStockStatus(currentStock: number, minThreshold: number): StockStatus {
-  if (currentStock <= minThreshold) return "rosu";
-  if (currentStock <= minThreshold * 1.3) return "galben";
-  return "verde";
-}
 
 const statusOrder: Record<StockStatus, number> = {
   rosu: 0,

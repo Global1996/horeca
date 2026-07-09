@@ -45,6 +45,9 @@ export default async function DashboardPage() {
         <Button asChild size="sm" variant="secondary">
           <Link href="/dashboard/angajati">Angajați</Link>
         </Button>
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/dashboard/rapoarte">Rapoarte</Link>
+        </Button>
       </div>
 
       <Card>
